@@ -27,6 +27,7 @@ string GetValidEquation(char[] opperators)
 
 bool isValidEquation(string equation, char[] opperators)
 {
+
     int opperatorCount = 0;
 
     if (equation.Length < 3)
@@ -34,33 +35,53 @@ bool isValidEquation(string equation, char[] opperators)
         return false;
     }
 
+    //I dont like the readablility of these checks but i currently dont have time to fix
     for (int i = 0; i < equation.Length; i++)
     {
         if (equation[i] == ' ')
         {
-            if (char.IsDigit(equation[i - 1]) == char.IsDigit(equation[i + 1])) { return false; } // not the most readable work on it- essentualliy (5 +) is ok (6 7) isn't 
+            if (char.IsDigit(equation[i - 1]) == char.IsDigit(equation[i + 1]))
+            {
+                ErrorMessage("Invalid equation: space is breaking a number");
+                return false;
+            }
         }
 
         else if (equation[i] == '.')
         {
-            if (!char.IsDigit(equation[i - 1]) || !char.IsDigit(equation[i + 1])) { return false; } // not readable either, makes sure either side of the dot is a number 
+            if (i == equation.Length - 1)
+            {
+                ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
+                return false;
+            }
+
+            if (!char.IsDigit(equation[i - 1]) || !char.IsDigit(equation[i + 1]))
+            {
+                ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
+                return false;
+            }
         }
 
         else if (!char.IsDigit(equation[i]) && !opperators.Contains(equation[i]))
         {
-            Console.WriteLine($"{equation[i]} isn't a number or opperator");
+            ErrorMessage($"{equation[i]} isn't a number or opperator");
             return false;
         }
 
         else if (opperators.Contains(equation[i]))
         {
+            if (i == equation.Length - 1 || i == 0)
+            {
+                ErrorMessage("Invailid equation, the must be two numbers");
+                return false;
+            }
             opperatorCount++;
         }
     }
 
     if (opperatorCount != 1)
     {
-        Console.WriteLine("You can only use one opperator/ you need 1 opperator");
+        ErrorMessage("You can only use one opperator/ you need 1 opperator");
         return false;
     }
 
@@ -80,7 +101,6 @@ float SolveEquation(string equation, char[] opperators)
     }
 
     opperator = opperators[i - 1];
-
     num1 = float.Parse(equation.Substring(0, opperatorIndex));
     num2 = float.Parse(equation.Substring(opperatorIndex + 1));
 
@@ -113,4 +133,11 @@ float SolveEquation(string equation, char[] opperators)
         Console.WriteLine("Invalid Opperator: setting result to -1");
         return -1;
     }
+}
+
+static void ErrorMessage(string message)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine(message);
+    Console.ResetColor();
 }
