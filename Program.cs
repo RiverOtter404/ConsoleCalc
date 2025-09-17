@@ -84,6 +84,7 @@ bool isValidEquation(string equation, char[] opperators)
                 ErrorMessage("Invailid equation: there must be two numbers");
                 return false;
             }
+
             opperatorCount++;
             decimalCount = 0;
         }
@@ -116,7 +117,7 @@ float SolveEquation(string equation, char[] opperators)
 
     if (opperator == 'x')
     {
-        return num1 * num2;
+        return float.Round(num1 * num2, 3);
     }
     else if (opperator == '/')
     {
@@ -124,11 +125,11 @@ float SolveEquation(string equation, char[] opperators)
     }
     else if (opperator == '+')
     {
-        return num1 + num2;
+        return float.Round(num1 + num2, 3);
     }
     else if (opperator == '-')
     {
-        return num1 - num2;
+        return float.Round(num1 - num2, 3);
     }
     else if (opperator == '^')
     {
@@ -136,7 +137,7 @@ float SolveEquation(string equation, char[] opperators)
     }
     else if (opperator == '%')
     {
-        return num1 % num2;
+        return float.Round(num1 % num2);
     }
     else
     {
