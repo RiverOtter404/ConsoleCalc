@@ -1,4 +1,4 @@
-﻿//Declerations
+//Declerations
 float result = 0;
 string equation = string.Empty;
 char[] opperators = ['+', '/', 'x', '-', '^', '%'];
@@ -29,6 +29,7 @@ bool isValidEquation(string equation, char[] opperators)
 {
 
     int opperatorCount = 0;
+    int decimalCount = 0;
 
     if (equation.Length < 3)
     {
@@ -49,6 +50,8 @@ bool isValidEquation(string equation, char[] opperators)
 
         else if (equation[i] == '.')
         {
+            decimalCount++;
+
             if (i == equation.Length - 1)
             {
                 ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
@@ -58,6 +61,12 @@ bool isValidEquation(string equation, char[] opperators)
             if (!char.IsDigit(equation[i - 1]) || !char.IsDigit(equation[i + 1]))
             {
                 ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
+                return false;
+            }
+
+            if (decimalCount > 1)
+            {
+                ErrorMessage("Invalid equation: there can only be one decimal place in a number");
                 return false;
             }
         }
@@ -72,10 +81,11 @@ bool isValidEquation(string equation, char[] opperators)
         {
             if (i == equation.Length - 1 || i == 0)
             {
-                ErrorMessage("Invailid equation, the must be two numbers");
+                ErrorMessage("Invailid equation: there must be two numbers");
                 return false;
             }
             opperatorCount++;
+            decimalCount = 0;
         }
     }
 
@@ -130,7 +140,7 @@ float SolveEquation(string equation, char[] opperators)
     }
     else
     {
-        Console.WriteLine("Invalid Opperator: setting result to -1");
+        ErrorMessage("Invalid Opperator: defaulting result to -1");
         return -1;
     }
 }
