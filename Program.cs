@@ -32,7 +32,7 @@ string GetEquationWithResults(string opperators)
                 result = float.Parse(SolveEquation(userEquation, opperators).Trim());
                 validResult = true;
             }
-            catch
+            catch (FormatException)
             {
                 ErrorMessage("Invaild Input");
             }
@@ -46,7 +46,7 @@ string SolveEquation(string equation, string opperators, int dep = 0 )
 {
     //Console.WriteLine($"\n{dep}: equation = {equation}");
 
-    int orderOfOp = 3;
+    int orderOfOp = opperators.Length / 2;
     Queue<int> opIndex = new Queue<int> { };
     opIndex.Enqueue(-1);
     char op = ' ';
@@ -55,7 +55,7 @@ string SolveEquation(string equation, string opperators, int dep = 0 )
     {
         if (opperators.Contains(equation[i]))
         {
-            if (orderOfOp > (indexOfAny(opperators, equation[i].ToString()) / 2))
+            if (orderOfOp > (indexOfAny(opperators, equation[i].ToString()) / 2) || orderOfOp == 0)
             {
                 if (opIndex.Count != 1) opIndex.Dequeue();
                 opIndex.Enqueue(i);
