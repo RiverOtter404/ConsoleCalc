@@ -1,151 +1,149 @@
 //Declerations
-float result = 0;
-string equation = string.Empty;
-char[] opperators = ['+', '/', 'x', '-', '^', '%'];
+string fullEquation;
+string opperators = "^rx/+-";
 
 //Get results
-equation = GetValidEquation(opperators);
-result = SolveEquation(equation, opperators);
+fullEquation = GetEquationWithResults(opperators);
 
 //output
-Console.WriteLine($"{equation} = {result}");
-
+Console.WriteLine(fullEquation);
 
 //Subroutines
-string GetValidEquation(char[] opperators)
+string GetEquationWithResults(string opperators)
 {
     string userEquation = string.Empty;
+    float result = 0;
+    bool validResult = false;
 
-    while (!isValidEquation(userEquation, opperators))
+    while (!validResult)
     {
-        Console.Write("Enter Equation: ");
+        Console.Write("Enter Equation (s for settings): ");
         userEquation = Console.ReadLine().ToLower().Trim();
+
+        if (userEquation == "s")
+        {
+            displaySettings(opperators);
+        }
+        
+        else
+        {
+            try
+            {
+                result = float.Parse(SolveEquation(userEquation, opperators).Trim());
+                validResult = true;
+            }
+            catch
+            {
+                ErrorMessage("Invaild Input");
+            }
+        }
     }
 
-    return userEquation;
+    return $"{userEquation} = {result}";
 }
 
-bool isValidEquation(string equation, char[] opperators)
+string SolveEquation(string equation, string opperators, int dep = 0 )
 {
+    //Console.WriteLine($"\n{dep}: equation = {equation}");
 
-    int opperatorCount = 0;
-    int decimalCount = 0;
+    int orderOfOp = 3;
+    Queue<int> opIndex = new Queue<int> { };
+    opIndex.Enqueue(-1);
+    char op = ' ';
 
-    if (equation.Length < 3)
-    {
-        return false;
-    }
-
-    //I dont like the readablility of these checks but i currently dont have time to fix
     for (int i = 0; i < equation.Length; i++)
     {
-        if (equation[i] == ' ')
+        if (opperators.Contains(equation[i]))
         {
-            if (char.IsDigit(equation[i - 1]) == char.IsDigit(equation[i + 1]))
+            if (orderOfOp > (indexOfAny(opperators, equation[i].ToString()) / 2))
             {
-                ErrorMessage("Invalid equation: space is breaking a number");
-                return false;
-            }
-        }
+                if (opIndex.Count != 1) opIndex.Dequeue();
+                opIndex.Enqueue(i);
 
-        else if (equation[i] == '.')
-        {
-            decimalCount++;
-
-            if (i == equation.Length - 1)
-            {
-                ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
-                return false;
+                orderOfOp = indexOfAny(opperators, equation[i].ToString()) / 2;
+                op = equation[i];
             }
 
-            if (!char.IsDigit(equation[i - 1]) || !char.IsDigit(equation[i + 1]))
+            else if (opIndex.Count != 3)
             {
-                ErrorMessage("Invalid equation: decimal places must have numbers at both sides");
-                return false;
+                opIndex.Enqueue(i);
             }
-
-            if (decimalCount > 1)
-            {
-                ErrorMessage("Invalid equation: there can only be one decimal place in a number");
-                return false;
-            }
-        }
-
-        else if (!char.IsDigit(equation[i]) && !opperators.Contains(equation[i]))
-        {
-            ErrorMessage($"{equation[i]} isn't a number or opperator");
-            return false;
-        }
-
-        else if (opperators.Contains(equation[i]))
-        {
-            if (i == equation.Length - 1 || i == 0)
-            {
-                ErrorMessage("Invailid equation: there must be two numbers");
-                return false;
-            }
-
-            opperatorCount++;
-            decimalCount = 0;
         }
     }
 
-    if (opperatorCount != 1)
+    if (opIndex.Count <= 1)
     {
-        ErrorMessage("You can only use one opperator/ you need 1 opperator");
-        return false;
+        return equation;
+    }
+    else if (opIndex.Count == 2)
+    {
+        opIndex.Enqueue(equation.Length);
     }
 
-    return true;
-}
+    string NewEquation = "", equationStart, equationEnd;
+    float result = 0;
+    float[] nums = new float[2] { 0, 0 };
 
-float SolveEquation(string equation, char[] opperators)
-{
-    float num1, num2;
-    int i = 0, opperatorIndex = -1;
-    char opperator;
-
-    while (opperatorIndex == -1)
+    equationStart = equation.Substring(0, opIndex.Peek() +1);
+ 
+    for (int i = 0; i < 2; i++)
     {
-        opperatorIndex = equation.IndexOf(opperators[i]);
-        i++;
+        int startIndex = opIndex.Dequeue() + 1;
+        //Console.WriteLine(equation.Substring(startIndex, opIndex.Peek() - startIndex).Trim());
+        nums[i] = float.Parse(equation.Substring(startIndex, opIndex.Peek() - startIndex).Trim());
     }
 
-    opperator = opperators[i - 1];
-    num1 = float.Parse(equation.Substring(0, opperatorIndex));
-    num2 = float.Parse(equation.Substring(opperatorIndex + 1));
+    equationEnd = equation.Substring(opIndex.Peek(), equation.Length - opIndex.Peek());
 
-    if (opperator == 'x')
+    if (op == '^')
+        result = (float)Math.Pow(nums[0], nums[1]);
+    else if (op == 'r')
+        result = (float)Math.Pow(nums[0], 1 / nums[1]);
+    else if (op == 'x')
+        result = nums[0] * nums[1];
+    else if (op == '/')
+        result = nums[0] / nums[1];
+    else if (op == '+')
+        result = nums[0] + nums[1];
+    else if (op == '-')
     {
-        return float.Round(num1 * num2, 3);
-    }
-    else if (opperator == '/')
-    {
-        return float.Round(num1 / num2, 3);
-    }
-    else if (opperator == '+')
-    {
-        return float.Round(num1 + num2, 3);
-    }
-    else if (opperator == '-')
-    {
-        return float.Round(num1 - num2, 3);
-    }
-    else if (opperator == '^')
-    {
-        return float.Round((float)Math.Pow(num1, num2), 3);
-    }
-    else if (opperator == '%')
-    {
-        return float.Round(num1 % num2);
+        result = nums[0] - nums[1];
+        //Console.WriteLine($"op = {op} num0 = {nums[0]} result = {result} num1 = {nums[1]}");
     }
     else
-    {
-        ErrorMessage("Invalid Opperator: defaulting result to -1");
-        return -1;
-    }
+        ErrorMessage("Opperator issue"); 
+
+    NewEquation = $"{equationStart}{result}{equationEnd}";
+
+    return SolveEquation(NewEquation, opperators, dep+1);
+    
 }
 
+int indexOfAny(string location, string target)
+{
+    for (int i = 0; i < location.Length; i++)
+    {
+        if (target.Contains(location[i]))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+
+}
+
+void displaySettings(string opperators)
+{
+    Console.WriteLine("Valid opperators are:");
+
+    foreach (char op in opperators)
+    {
+        Console.Write($"{op} ");
+    }
+
+    Console.WriteLine("\nCannot work with negative numbers and most negative results curently");
+}
 static void ErrorMessage(string message)
 {
     Console.ForegroundColor = ConsoleColor.Red;
